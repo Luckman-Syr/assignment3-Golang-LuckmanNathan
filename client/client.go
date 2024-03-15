@@ -14,7 +14,7 @@ type Status struct {
 	Wind  int `json:"wind"`
 }
 
-type StatusInfo struct {
+type StatusInfoo struct {
 	Status      Status `json:"status"`
 	WaterStatus string `json:"water_status"`
 	WindStatus  string `json:"wind_status"`
@@ -57,7 +57,7 @@ func updateJSONFile() {
 		water, wind := generateRandomValue()
 		waterStatus, windStatus := getStatus(water, wind)
 
-		status := StatusInfo{
+		status := StatusInfoo{
 			Status: Status{
 				Water: water,
 				Wind:  wind,
@@ -67,48 +67,16 @@ func updateJSONFile() {
 		}
 
 		jsonData, _ := json.MarshalIndent(status, "", "    ")
-		_ = ioutil.WriteFile("status.json", jsonData, 0644)
+		_ = ioutil.WriteFile("../status.json", jsonData, 0644)
 
 		time.Sleep(15 * time.Second)
-		fmt.Println("Status updated!")
+		fmt.Println("Status updated")
 	}
-}
-
-func serveHTTP(w http.ResponseWriter, r *http.Request) {
-	jsonData, err := ioutil.ReadFile("status.json")
-	if err != nil {
-		http.Error(w, "Failed to read status file", http.StatusInternalServerError)
-		return
-	}
-
-	var status StatusInfo
-	err = json.Unmarshal(jsonData, &status)
-	if err != nil {
-		http.Error(w, "Failed to parse status file", http.StatusInternalServerError)
-		return
-	}
-
-	html := fmt.Sprintf(`
-        <html>
-        <head>
-            <meta http-equiv="refresh" content="15">
-        </head>
-        <body>
-            <h1>Status:</h1>
-            <p>Water Level: %d meter (%s)</p>
-            <p>Wind Speed: %d meter/s (%s)</p>
-        </body>
-        </html>
-    `, status.Status.Water, status.WaterStatus, status.Status.Wind, status.WindStatus)
-
-	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprintf(w, html)
 }
 
 func main() {
-	go updateJSONFile()
+	updateJSONFile()
 
-	http.HandleFunc("/", serveHTTP)
-	fmt.Println("Server started at http://localhost:8000")
-	http.ListenAndServe(":8000", nil)
+	fmt.Println("Client started at http://localhost:8001")
+	http.ListenAndServe(":8001", nil)
 }
